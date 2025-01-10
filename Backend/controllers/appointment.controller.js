@@ -7,19 +7,6 @@ export const scheduleAppointment = async (req, res) => {
     const patientId = req.user._id; // Get the logged-in patient's ID
     // console.log("Patient:", patientId);
 
-    // Find doctors that belong to the selected department
-    // const availableDoctors = await DoctorDetails.find({ Specialization: { $in: [department] } });
-    // console.log("Available Doctors:", availableDoctors);
-    // console.log("Doctor ID:", doctorId);
-    // console.log("Available Doctors IDs:", availableDoctors.map(doc => doc._id));
-    // // Check if the selected doctor exists in the available doctors list
-    // if (!availableDoctors.some((doctor) => doctor._id.toString() === doctorId)) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "The selected doctor does not belong to the chosen department.",
-    //   });
-    // }
-
     // Create the appointment
     const newAppointment = new Appointment({
       patientId,
@@ -31,9 +18,6 @@ export const scheduleAppointment = async (req, res) => {
     });
 
     await newAppointment.save();
-
-    // Optionally, send a notification to the doctor
-    // You could use a notification service here (e.g., email, push notifications, etc.)
 
     res.status(201).json({
       success: true,
