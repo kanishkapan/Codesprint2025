@@ -5,19 +5,49 @@ const DoctorAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [previousAppointments, setPreviousAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
+        setLoading(true);
         const response = await api.get("/api/user/appointment/dashboard/doctor");
-        const { upcomingAppointments, pastAppointments } = response.data;
+        
+        if (response.data.success) {
+          // Separate appointments into current and previous
+          const current = [];
+          const previous = [];
+          const now = new Date();
 
-        // Assuming the API returns two arrays: upcomingAppointments and pastAppointments
-        setAppointments(upcomingAppointments || []);
-        setPreviousAppointments(pastAppointments || []);
+          response.data.appointments.forEach((appointment) => {
+            const appointmentDateTime = new Date(appointment.dateTime);
+            if (appointmentDateTime >= now) {
+              current.push({
+                id: appointment.appointmentId,
+                patientName: appointment.patientName || "Unknown",
+                time: appointmentDateTime.toLocaleTimeString(),
+                date: appointmentDateTime.toLocaleDateString(),
+                status: appointment.status || "pending",
+              });
+            } else {
+              previous.push({
+                id: appointment.appointmentId,
+                patientName: appointment.patientName || "Unknown",
+                time: appointmentDateTime.toLocaleTimeString(),
+                date: appointmentDateTime.toLocaleDateString(),
+                status: appointment.status || "completed",
+              });
+            }
+          });
+
+          setAppointments(current);
+          setPreviousAppointments(previous);
+        } else {
+          setError("Failed to fetch appointments.");
+        }
       } catch (err) {
-        setError("Failed to fetch appointment data. Please try again later.");
+        console.error("Error fetching appointments:", err);
+        setError("Error fetching appointments.");
       } finally {
         setLoading(false);
       }
@@ -26,28 +56,20 @@ const DoctorAppointments = () => {
     fetchAppointments();
   }, []);
 
-  const handleAction = async (id, action) => {
-    try {
-      // Make API call to update the appointment status
-      await api.put(`/api/user/appointment/${id}`, { status: action });
-
-      // Update the local state after the API call
-      setAppointments((prev) =>
-        prev.map((appointment) =>
-          appointment.id === id ? { ...appointment, status: action } : appointment
-        )
-      );
-    } catch (err) {
-      setError("Failed to update appointment status. Please try again.");
-    }
+  const handleAction = (id, action) => {
+    setAppointments((prev) =>
+      prev.map((appointment) =>
+        appointment.id === id ? { ...appointment, status: action } : appointment
+      )
+    );
   };
 
   if (loading) {
-    return <div className="text-center p-6">Loading appointments...</div>;
+    return <p className="text-center text-gray-500">Loading appointments...</p>;
   }
 
   if (error) {
-    return <div className="text-center p-6 text-red-500">{error}</div>;
+    return <p className="text-center text-red-500">{error}</p>;
   }
 
   return (
@@ -124,3 +146,4 @@ const DoctorAppointments = () => {
 };
 
 export default DoctorAppointments;
+

@@ -29,6 +29,12 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     default: "",
   },
+  status: {
+    type: String,
+    enum: ["Pending", "Accepted", "Rejected"],
+    default: "Pending",
+    required: true,
+  }
 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
