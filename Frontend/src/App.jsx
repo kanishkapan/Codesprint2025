@@ -1,20 +1,60 @@
-import React from 'react'
-<<<<<<< HEAD
-import WelcomeSection from "./components/LandingPage/WelcomeSection"
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+
+// Import Navbar components
+import Navbar from "./components/Footer/Navbar";
+import ProfileNavbar from "./components/Footer/ProfileNavbar";
+
+// Import Page Components
+import AibotPage from "../src/pages/AiBot";
+import ContactPage from "../src/pages/ContactPage";
+import LandingPage from "../src/pages/LandingPage";
+import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
+import PatientForm from "./components/Profile/PatientForm";
+
+import Medicines from "./pages/Medicines";
+import Login from "./pages/Login";
+import SignIn from "./components/Login/SignUp";
+import LoginPage from "./components/Login/LoginPage";
+import VideoCall from "./pages/VideoCall";
+import LiveChat from "./pages/LiveChat";
+import AppointmentForm from "./pages/AppointmentForm";
+import DoctorsInfo from "./pages/DoctorsInfo";
+import DashBoard from "./pages/DashBoard";
+import NavbarSelector from "./components/Footer/NavbarSelector"
+
 const App = () => {
   return (
-    <div>
+    <Router>
+      {/* Navbar Selector */}
+      <NavbarSelector />
 
+      <Routes>
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
 
-      <WelcomeSection/>
-    </div>
-=======
+        {/* AI Bot Page */}
+        <Route path="/aibot" element={<AibotPage />} />
 
-const App = () => {
-  return (
-    <div>App</div>
->>>>>>> a14d3ede9882cd80cb96d6498af887aaf1190977
-  )
-}
+        {/* Contact Page */}
+        <Route path="/contact" element={<ContactPage />} />
 
-export default App
+        {/* Profile Pages */}
+        <Route path="/profile/patient" element={<PatientForm />} />
+        <Route path="/profile/doctor" element={<DoctorsInfo />} />
+
+        {/* Other Pages */}
+        <Route path="/Appointment" element={<AppointmentForm />} />
+        <Route path="/medicines" element={<Medicines />} />
+        <Route path="/signup" element={<SignIn />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/video-call" element={<VideoCall />} />
+        <Route path="/live-chat" element={<LiveChat />} />
+        <Route path="/dashboard" element={<DashBoard />} />
+      </Routes>
+    </Router>
+  );
+};
+
+export default App;

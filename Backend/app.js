@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import connectDB from "./db/database.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-// import setupRoutes from "./routes/index.js";
+import setupRoutes from "./routes/index.js";
 
 const app = express();
 dotenv.config();
@@ -15,13 +15,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "process.env.FRONTENDURL",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
 
 
-// setupRoutes(app);
+setupRoutes(app);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

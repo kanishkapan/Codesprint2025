@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import {api} from "../../axios.config.js";
 import { useNavigate } from "react-router-dom"; // For navigation
 
 const LoginPage = () => {
@@ -21,7 +21,7 @@ const LoginPage = () => {
     setIsLoading(true); // Start loading
     try {
       // Send login data to backend
-      const response = await axios.post("http://localhost:3015/api/user/login", data);
+      const response = await api.post("/api/user/login", data);
   
       if (response.status === 200) {
         setLoginSuccess(true); // Show success message
@@ -47,7 +47,7 @@ const LoginPage = () => {
       {/* Left Video Section */}
       <div className="hidden lg:flex lg:w-1/2 relative">
         <video
-          src="https://cdn.pixabay.com/video/2019/04/09/22704-329952760_tiny.mp4"
+          src="https://cdn.pixabay.com/video/2024/11/07/240330_tiny.mp4"
           autoPlay
           loop
           muted

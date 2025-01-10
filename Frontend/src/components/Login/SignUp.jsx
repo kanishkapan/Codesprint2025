@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import {api} from "../../axios.config.js";
 import { useNavigate } from "react-router-dom"; // Import navigate for redirection
 
 const SignUp = () => {
@@ -23,8 +23,8 @@ const SignUp = () => {
     setIsLoading(true); // Start loading
     try {
       // Send signup data to backend
-      const response = await axios.post(
-        "http://localhost:3015/api/user/register",
+      const response = await api.post(
+        "/api/user/register",
         data
       );
 
@@ -52,7 +52,7 @@ const SignUp = () => {
       {/* Left Video Section */}
       <div className="hidden lg:flex lg:w-1/2 relative">
         <video
-          src="https://cdn.pixabay.com/video/2019/02/01/21114-315191258_tiny.mp4"
+          src="https://cdn.pixabay.com/video/2024/11/07/240330_tiny.mp4"
           autoPlay
           loop
           muted
