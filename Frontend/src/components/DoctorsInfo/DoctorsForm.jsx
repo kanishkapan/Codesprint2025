@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {api} from "../../axios.config.js";
+import { api } from "../../axios.config.js";
 
 const DoctorsForm = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +15,9 @@ const DoctorsForm = () => {
     yearOfPgCompletion: "",
     experience: "",
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({ success: false, message: "" });
 
   const specialityOptions = [
     "General Medicine",
@@ -52,14 +55,88 @@ const DoctorsForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus({ success: false, message: "" });
+    
+    // Validate form data before submission
+    if (formData.specialities.length === 0) {
+      setSubmitStatus({
+        success: false,
+        message: "Please select at least one speciality"
+      });
+      setIsSubmitting(false);
+      return;
+    }
+    
     try {
-      const response = await api.post(
-        "/api/user/profile/doctor",
-        formData
-      );
-      console.log("Doctor Registered:", response.data);
+      // Create a new object with the properly formatted data
+      const formattedData = {
+        ...formData,
+        age: parseInt(formData.age),
+        yearOfUgCompletion: parseInt(formData.yearOfUgCompletion),
+        // Only convert optional fields if they have values
+        yearOfPgCompletion: formData.yearOfPgCompletion ? parseInt(formData.yearOfPgCompletion) : null,
+        experience: formData.experience ? parseInt(formData.experience) : null,
+      };
+      
+      // Remove any null/undefined values from optional fields
+      Object.keys(formattedData).forEach(key => {
+        if (formattedData[key] === null || formattedData[key] === undefined || formattedData[key] === "") {
+          delete formattedData[key];
+        }
+      });
+      
+      // Use a direct fetch call instead of axios to troubleshoot
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL || ""}/api/user/profile/doctor`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any auth headers your API might need
+          'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '',
+        },
+        body: JSON.stringify(formattedData),
+      });
+      
+      if (!response.ok) {
+        // Handle HTTP errors
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server responded with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Doctor Registered:", data);
+      
+      setSubmitStatus({ 
+        success: true, 
+        message: "Registration successful!" 
+      });
+      
+      // Reset form after successful submission
+      setFormData({
+        age: "",
+        gender: "",
+        medicalCollege: "",
+        ugDegree: "",
+        yearOfUgCompletion: "",
+        medicalRegistrationNumber: "",
+        specialities: [],
+        pgDegree: "",
+        pgSpecialization: "",
+        yearOfPgCompletion: "",
+        experience: "",
+      });
+      
     } catch (error) {
       console.error("Error registering doctor:", error);
+      
+      setSubmitStatus({
+        success: false,
+        message: error.message || "Failed to register. Please try again later."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -70,6 +147,15 @@ const DoctorsForm = () => {
           <h1 className="text-3xl font-bold text-blue-900 mb-8 text-center">
             Doctor Registration
           </h1>
+
+          {/* Status Message */}
+          {submitStatus.message && (
+            <div className={`p-4 mb-6 rounded-lg text-center ${
+              submitStatus.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            }`}>
+              {submitStatus.message}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
@@ -159,6 +245,8 @@ const DoctorsForm = () => {
                     onChange={handleChange}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
+                    min="1950"
+                    max={new Date().getFullYear()}
                   />
                 </div>
 
@@ -179,49 +267,58 @@ const DoctorsForm = () => {
             </div>
 
             {/* Specialities */}
-            <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Select Specialities</h1>
+            <div className="border-t pt-6 bg-gray-50 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-blue-900 mb-4">
+                Select Specialities
+              </h2>
 
-      <div className="relative">
-        <label className="block text-gray-700 font-semibold mb-2">
-          Specialities
-        </label>
+              <div className="relative">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Specialities
+                </label>
 
-        {/* Wrapper for Checkboxes */}
-        <div className="relative overflow-y-auto max-h-72 border border-gray-300 rounded-lg shadow-lg p-4">
-          <ul className="space-y-4">
-            {specialityOptions.map((speciality) => (
-              <li key={speciality} className="flex items-center space-x-3">
-                <input
-                  type="checkbox"
-                  value={speciality}
-                  onChange={handleSpecialityChange}
-                  checked={formData.specialities.includes(speciality)}
-                  className="form-checkbox text-blue-500 focus:ring-blue-500"
-                />
-                <span className="text-gray-700 font-medium">{speciality}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+                {/* Wrapper for Checkboxes */}
+                <div className="relative overflow-y-auto max-h-60 border border-gray-300 rounded-lg shadow-lg p-4 bg-white">
+                  <ul className="space-y-4">
+                    {specialityOptions.map((speciality) => (
+                      <li key={speciality} className="flex items-center space-x-3">
+                        <input
+                          type="checkbox"
+                          id={`spec-${speciality}`}
+                          value={speciality}
+                          onChange={handleSpecialityChange}
+                          checked={formData.specialities.includes(speciality)}
+                          className="form-checkbox text-blue-500 focus:ring-blue-500"
+                        />
+                        <label htmlFor={`spec-${speciality}`} className="text-gray-700 font-medium">
+                          {speciality}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
-      {/* Display Selected Specialities */}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-2">Selected Specialities:</h2>
-        {formData.specialities.length > 0 ? (
-          <ul className="list-disc pl-5">
-            {formData.specialities.map((spec, index) => (
-              <li key={index} className="text-gray-800">
-                {spec}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No specialities selected.</p>
-        )}
-      </div>
-    </div>
+              {/* Display Selected Specialities */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Selected Specialities:</h3>
+                {formData.specialities.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.specialities.map((spec, index) => (
+                      <span 
+                        key={index} 
+                        className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                      >
+                        {spec}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">No specialities selected.</p>
+                )}
+              </div>
+            </div>
+
             {/* PG Details (Optional) */}
             <div className="border-t pt-6">
               <h2 className="text-xl font-bold text-blue-900 mb-4">
@@ -271,6 +368,8 @@ const DoctorsForm = () => {
                     value={formData.yearOfPgCompletion}
                     onChange={handleChange}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    min="1950"
+                    max={new Date().getFullYear()}
                   />
                 </div>
 
@@ -284,6 +383,8 @@ const DoctorsForm = () => {
                     value={formData.experience}
                     onChange={handleChange}
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    min="0"
+                    max="70"
                   />
                 </div>
               </div>
@@ -293,9 +394,14 @@ const DoctorsForm = () => {
             <div className="flex justify-center pt-6">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                disabled={isSubmitting}
+                className={`px-8 py-3 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isSubmitting 
+                    ? "bg-blue-300 cursor-not-allowed" 
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
               >
-                Register
+                {isSubmitting ? "Submitting..." : "Register"}
               </button>
             </div>
           </form>

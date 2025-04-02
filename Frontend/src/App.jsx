@@ -23,6 +23,7 @@ import AppointmentForm from "./pages/AppointmentForm";
 import DoctorsInfo from "./pages/DoctorsInfo";
 import DashBoard from "./pages/DashBoard";
 import NavbarSelector from "./components/Footer/NavbarSelector"
+import Medicalcertificate from "./pages/Medicalcertificate";
 
 const App = () => {
   return (
@@ -52,6 +53,7 @@ const App = () => {
         <Route path="/video-call" element={<VideoCall />} />
         <Route path="/live-chat" element={<LiveChat />} />
         <Route path="/dashboard" element={<DashBoard />} />
+        <Route path="/certificates" element={<Medicalcertificate />} />
       </Routes>
     </Router>
   );
